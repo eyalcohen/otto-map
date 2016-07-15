@@ -38,6 +38,9 @@ server.bind(52323);
 
 function parse_coordinates(string line) {
   var array = line.split(",");
-  var coordinates = array[1] + ","  + array[3];
-  return coordinates;
+  var coord_pair =  {
+    lat: array[1],
+    long: array[3]
+  };
+  return coord_pair;
 }
