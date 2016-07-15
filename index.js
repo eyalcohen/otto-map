@@ -30,4 +30,14 @@ server.on('listening', () => {
 });
 
 server.bind(52323);
+
 // server listening 0.0.0.0:41234
+
+
+//$GPGLL,3746.87668,N,12223.89940,W,002610.00,A,A*73
+
+function parse_coordinates(string line) {
+  var array = line.split(",");
+  var coordinates = array[1] + ","  + array[3];
+  return coordinates;
+}
