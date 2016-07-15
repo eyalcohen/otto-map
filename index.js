@@ -1,8 +1,14 @@
 var express = require('express');
 var app = express();
+var http = require('http').Server(app);
+var dgram = require('dgram');
+var server = dgram.createSocket('udp4');
+var io = require('socket.io')(http);
 
-app.get('/', function (req, res) {
-  res.send('Hello World!');
+// Express
+
+app.get('/', function(req, res){
+  res.sendFile(__dirname + '/index.html');
 });
 
 app.listen(3000, function () {
@@ -10,11 +16,7 @@ app.listen(3000, function () {
 });
 
 
-
-const dgram = require('dgram');
-const server = dgram.createSocket('udp4');
-
-
+// UDP
 server.on('error', (err) => {
   console.log(`server error:\n${err.stack}`);
   server.close();
@@ -22,6 +24,15 @@ server.on('error', (err) => {
 
 server.on('message', (msg, rinfo) => {
   console.log(`server got: ${msg} from ${rinfo.address}:${rinfo.port}`);
+  // var socket = socket.connected;
+  // console.log(socket);
+  // if (socket) {
+  /*
+    io.emit('', function(socket){
+      console.log('geo', { test: 'test' });
+    });
+  */
+  //}
 });
 
 server.on('listening', () => {
@@ -30,4 +41,10 @@ server.on('listening', () => {
 });
 
 server.bind(52323);
-// server listening 0.0.0.0:41234
+
+// Socket IO
+
+io.on('connection', function(socket){
+  console.log('a user connected');
+});
+
