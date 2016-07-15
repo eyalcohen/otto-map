@@ -44,6 +44,17 @@ server.bind(52323);
 
 // Socket IO
 
+
+//$GPGLL,3746.87668,N,12223.89940,W,002610.00,A,A*73
+
+function parse_coordinates(string line) {
+  var array = line.split(",");
+  var coord_pair =  {
+    lat: array[1],
+    long: array[3]
+  };
+  return coord_pair;
+}
 io.on('connection', function(socket){
   console.log('a user connected');
 });
