@@ -17,17 +17,18 @@ socket.on('geo', function(msg){
     circle.setMap(null);
   }
   circle = new google.maps.Circle({
-    strokeColor: '#FF0000',
+    strokeColor: '#FFFFFF',
     strokeOpacity: 0.8,
     strokeWeight: 2,
-    fillColor: '#FF0000',
+    fillColor: '#4682B4',
     fillOpacity: 0.35,
     map: map,
     center: {
       lat: 37.78155,
       lng: -122.3981075
     },
-    radius: 36
+    radius: 38,
+    title: 'HQ'
   });
 
 });
