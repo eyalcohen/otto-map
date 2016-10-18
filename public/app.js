@@ -53,7 +53,7 @@ socket.on('geo', function(msg){
       truckMarkers[t.name] = new google.maps.Marker({
         position: new google.maps.LatLng(t[0].lat, t[0].lng),
         title: k,
-        icon: 'truck.png'
+        icon: 'truck_tiny.png'
       });
       truckMarkers[t.name].setMap(map);
     }
