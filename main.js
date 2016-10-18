@@ -38,7 +38,7 @@ console.log(truckNames, truckLocation);
 
 // Web server
 
-http_server.listen(3000, function () {
+http_server.listen(dev ? 3000 : 80, function () {
   console.log('Example app listening on port 3000!');
 });
 
@@ -84,10 +84,9 @@ if (dev) {
     var client = dgram.createSocket('udp4');
     client.send(message, 0, message.length, 23000, '127.0.0.1', function(err, bytes) {
         if (err) throw err;
-        console.log('UDP message sent');
         client.close();
     });
-  }, 5000);
+  }, 1000);
 }
 
 // Socket IO

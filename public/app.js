@@ -12,6 +12,9 @@ var truckPaths = {};
 var truckMarkers = {};
 socket.on('geo', function(msg){
 
+  if (!map)
+    return;
+
   var allMinLat = Number.MAX_VALUE;
   var allMaxLat = Number.MIN_VALUE;
   var allMinLng = Number.MAX_VALUE;
@@ -41,14 +44,14 @@ socket.on('geo', function(msg){
         truckPaths[t.name] = new google.maps.Polyline({
           path: t,
           geodesic: true,
-          strokeColor: '#FF0000',
-          strokeOpacity: 1.0,
-          strokeWeight: 2
+          strokeColor: '#2552f7',
+          strokeOpacity: 0.75,
+          strokeWeight: 14
         });
         truckPaths[t.name].setMap(map);
       }
       truckMarkers[t.name] = new google.maps.Marker({
-        position: new google.maps.LatLng(t[0].lat, t[0].lon),
+        position: new google.maps.LatLng(t[0].lat, t[0].lng),
         title: k,
         icon: 'truck.png'
       });
