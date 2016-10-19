@@ -32,7 +32,7 @@ _.each(truckNames, function(t) {
 
 var webport = dev ? 3000: 80;
 var udpport = 23000;
-var max_entries = 120;
+var max_entries = 60;
 
 // Web server
 

@@ -299,6 +299,7 @@ var truckColor = function(truckName) {
 var truckPaths = {};
 var truckMarkers = {};
 var truckPosition = {};
+var truckSelected = {};
 
 // Initialize the map
 $.get('/truckgeo.json', '', function(data, status) {
@@ -311,7 +312,18 @@ socket.on('geo', function(data){
   renderMap(data);
 });
 
-function initMap(trucks) {
+var selectTruck = function(which) {
+  if (truckSelected[which] === true) {
+    truckSelected[which] = false;
+    $('#legend-item-' + which + ' .legend-name').css('font-weight', '');
+  } else {
+    truckSelected[which] = true;
+    $('#legend-item-' + which + ' .legend-name').css('font-weight', 'bold');
+  }
+  panMap();
+};
+
+var initMap = function(trucks) {
   map = new google.maps.Map(document.getElementById('map'), {
     center: {lat: 37.78, lng: -122.4},
     zoom: 13,
@@ -330,8 +342,9 @@ function initMap(trucks) {
     var div = document.createElement('div');
     var color = truckColor(key);
     div.innerHTML =
-        '<div class="legend-item"><div class="legend-color" style = "background-color:' + color + '"></div>' +
-        '<span class="legend-name">' + key + '</span></div>';
+        '<a id=legend-item-' + key + ' onClick="selectTruck(\'' + key + '\')" class="legend-item">' +
+        '<div class="legend-color" style = "background-color:' + color + '"></div>' +
+        '<span class="legend-name">' + key + '</span></a>';
     legend.appendChild(div);
   };
   map.controls[google.maps.ControlPosition.RIGHT_BOTTOM].push(legend);
@@ -355,6 +368,9 @@ function initMap(trucks) {
     map: map,
   });
 
+  selectTruck('otto1');
+  selectTruck('otto2');
+  selectTruck('otto4');
 }
 
 var renderMap = function(data) {
@@ -399,19 +415,32 @@ var renderMap = function(data) {
       }
     }
   });
+  panMap();
+};
+
+
+var panMap = function() {
+  var anyTruckSelected = false;
+  for (key in truckSelected) {
+    anyTruckSelected = anyTruckSelected || truckSelected[key];
+  }
 
   // Panning
   if ($('#checkbox-follow').is(':checked')) {
     var bounds = new google.maps.LatLngBounds();
 
     $.each(truckMarkers, function(k, v) {
-      bounds.extend(v.getPosition());
+      if (truckSelected[k] || !anyTruckSelected) {
+        bounds.extend(v.getPosition());
+      }
     });
 
     $.each(truckPaths, function(k, v) {
-      v.getPath().forEach(function(latlng) {
-        bounds.extend(latlng);
-      });
+      if (truckSelected[k] || !anyTruckSelected) {
+        v.getPath().forEach(function(latlng) {
+          bounds.extend(latlng);
+        });
+      }
     });
     var extendPoint1 = new google.maps.LatLng(bounds.getNorthEast().lat() + 0.01, bounds.getNorthEast().lng() + 0.01);
     var extendPoint2 = new google.maps.LatLng(bounds.getSouthWest().lat() - 0.01, bounds.getSouthWest().lng() - 0.01);
@@ -419,5 +448,4 @@ var renderMap = function(data) {
     bounds.extend(extendPoint2);
     map.fitBounds(bounds);
   }
-
-};
+}

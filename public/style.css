@@ -127,6 +127,7 @@ h3 {
 
 .legend-item {
   margin-top: 4px;
+  cursor: pointer;
 }
 
 .legend-color{
@@ -144,3 +145,5 @@ h3 {
 #checkbox-follow {
   font-size: 12px;
 }
+
+
