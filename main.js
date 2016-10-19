@@ -7,11 +7,10 @@ var _ = require('underscore');
 var dgram = require('dgram');
 var udp_server = dgram.createSocket('udp4');
 
-
 // Initializations
 var dev = process.env.NODE_ENV !== 'production';
 
-ipMap = {
+ipMap = dev ? { '127.0.0.1': 'dev1' } : {
   '166.248.27.143':  'otto1',
   '166.130.150.240': 'otto1',
   '166.211.33.148':  'otto2',
@@ -22,7 +21,6 @@ ipMap = {
   '166.130.151.69':  'otto4',
   '166.211.33.149':  'otto5',
   '166.130.151.66':  'otto5',
-  '127.0.0.1': 'dev'
 };
 
 var truckNames = _.uniq(_.values(ipMap));
@@ -32,27 +30,30 @@ _.each(truckNames, function(t) {
   truckLocation[t] = [];
 });
 
-var max_entries = 12;
-
-console.log(truckNames, truckLocation);
+var webport = dev ? 3000: 80;
+var udpport = 23000;
+var max_entries = 120;
 
 // Web server
 
-http_server.listen(dev ? 3000 : 80, function () {
-  console.log('Example app listening on port 3000!');
+http_server.listen(webport, function () {
+  console.log('app listening on port ' + webport);
 });
 
 app.use(express.static(__dirname + '/public'));
 
+app.get('/truckgeo.json', function(req, res) {
+  res.send(truckLocation);
+});
 
 // UDP
 udp_server.on('error', (err) => {
-  console.log(`udp_server error:\n${err.stack}`);
   udp_server.close();
 });
 
+udp_server.bind(udpport);
+
 udp_server.on('message', (msg, rinfo) => {
-  // console.log(`udp_server got: ${msg} from ${rinfo.address}:${rinfo.port}`);
   var lat_lng = getLatLng(msg.toString('utf8'));
   var truck = ipMap[rinfo.address];
   if (truck) {
@@ -61,38 +62,39 @@ udp_server.on('message', (msg, rinfo) => {
       lat: lat_lng.lat,
       lng: lat_lng.lon
     }
-    truckLocation[truck].push(loc);
-    if (truckLocation[truck].length > max_entries) {
-      truckLocation[truck].pop();
+    var arr = truckLocation[truck];
+    arr.unshift(loc);
+    var ageout = 1000 * 60 * 60
+    if (arr[arr.length - 1].time + ageout < Date.now() ||
+        arr.length > max_entries) {
+      arr.pop();
     }
-    // console.log(truckLocation);
-    io.emit('geo', truckLocation)
   }
 });
 
-udp_server.on('listening', () => {
-  var address = udp_server.address();
-  console.log(`udp_server listening ${address.address}:${address.port}`);
-});
+// Push down incremental updates on socket
 
-udp_server.bind(23000);
+setInterval(function() {
+  io.emit('geo', truckLocation);
+}, 10000);
 
 // for test
 if (dev) {
   setInterval(function() {
-    var message = new Buffer('$GPRMC,223229.00,A,4016.26077,N,10458.80805,W,40.683,0.79,171016,,,D*4');
+    var messages = [
+      new Buffer('$GPRMC,223229.00,A,4016.26077,N,10458.80805,W,40.683,0.79,171016,,,D*4'),
+      new Buffer('$GPRMC,223229.00,A,4016.36077,N,10458.80805,W,40.683,0.79,171016,,,D*4'),
+      new Buffer('$GPRMC,223229.00,A,4016.46077,N,10458.80805,W,40.683,0.79,171016,,,D*4')
+    ];
+
+    var which = Date.now() % messages.length;
     var client = dgram.createSocket('udp4');
-    client.send(message, 0, message.length, 23000, '127.0.0.1', function(err, bytes) {
+    client.send(messages[which], 0, messages[which].length, 23000, '127.0.0.1', function(err, bytes) {
         if (err) throw err;
         client.close();
     });
   }, 1000);
 }
-
-// Socket IO
-
-io.on('connection', function(socket){
-});
 
 // This function parses NMEA, RMC values into decimal longitude and latitude coordinates.
 function getLatLng(d) {

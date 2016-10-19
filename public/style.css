@@ -109,6 +109,38 @@ html, body {
   margin: 0;
   padding: 0;
 }
+
+h3 {
+  font-size: 16px;
+  margin-bottom: 8px;
+}
+
 #map {
   height: 100%;
+  width: 100%;
+}
+
+#legend {
+  background: white;
+  padding: 20px;
+}
+
+.legend-item {
+  margin-top: 4px;
+}
+
+.legend-color{
+  float: left;
+  width: 20px;
+  height: 20px;
+}
+
+.legend-name {
+  line-height: 24px;
+  font-size: 12px;
+  padding-left: 6px;
+}
+
+#checkbox-follow {
+  font-size: 12px;
 }
